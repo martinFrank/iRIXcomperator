@@ -19,10 +19,10 @@ public class FloatingPointNumberComparator {
     private static final String ERROR_MESSAGE_OUT_OF_RANGE = "this method is cannot be applied to very %s numbers " +
             "(see IEEE754 (https://ieeexplore.ieee.org/document/8766229))";
     private static final String ERROR_MESSAGE_NAN = "NaN (not a number) is not a valid argument";
-    private static final String ERROR_MESSAGE_INVALID_EPSILON = "Approximity factor is invalid";
+    private static final String ERROR_MESSAGE_INVALID_EPSILON = "Approximate factor is invalid";
 
     /**
-     * compares two float point values for ApproximityEquallity
+     * compares two float point values for ApproximatelyEqually
      *
      * @param first  floating point number
      * @param second floating point number
@@ -34,7 +34,7 @@ public class FloatingPointNumberComparator {
     }
 
     /**
-     * compares two float point values for ApproximityEquallity
+     * compares two float point values for ApproximatelyEqually
      *
      * @param first               floating point number
      * @param second              floating point number
@@ -43,7 +43,7 @@ public class FloatingPointNumberComparator {
      * @throws IllegalArgumentException when first/second out of range (+/-1E+/-150)
      */
     public static boolean isApproximatelyEqual(double first, double second, double approximatelyEpsilon) {
-        validateInput(first, second);
+        checkInput(first, second);
         double epsilon = first * approximatelyEpsilon;
         LOGGER.fine("first  :" + first);
         LOGGER.fine("second :" + second);
@@ -59,7 +59,7 @@ public class FloatingPointNumberComparator {
         }
     }
 
-    private static void validateInput(double first, double second) {
+    private static void checkInput(double first, double second) {
         if (Double.isNaN(first) || Double.isNaN(second)) {
             throw new IllegalArgumentException(ERROR_MESSAGE_NAN);
         }
