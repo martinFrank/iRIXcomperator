@@ -11,13 +11,15 @@ import java.util.logging.Logger;
 public class FloatingPointNumberComparator {
 
     private static final Logger LOGGER = Logger.getLogger(FloatingPointNumberComparator.class.getName());
-    public static final double DEFAULT_APPROXIMATELY_FACTOR = 0.001;
+    public static final double DEFAULT_APPROXIMATELY_EPSILON = 0.001;
     private static final double BIG_MAX = 1E150;
     private static final double BIG_MIN = -1E150;
     private static final double SMALL_MAX = 1E-150;
     private static final double SMALL_MIN = -1E-150;
-    private static final String ERROR_MESSAGE = "this method is cannot be applied to very %s numbers " +
+    private static final String ERROR_MESSAGE_OUT_OF_RANGE = "this method is cannot be applied to very %s numbers " +
             "(see IEEE754 (https://ieeexplore.ieee.org/document/8766229))";
+    private static final String ERROR_MESSAGE_NAN = "NaN (not a number) is not a valid argument";
+    private static final String ERROR_MESSAGE_INVALID_EPSILON = "Approximity factor is invalid";
 
     /**
      * compares two float point values for ApproximityEquallity
@@ -28,7 +30,7 @@ public class FloatingPointNumberComparator {
      * @throws IllegalArgumentException when first/second out of range (+/-1E+/-150)
      */
     public static boolean isApproximatelyEqual(double first, double second) {
-        return isApproximatelyEqual(first, second, DEFAULT_APPROXIMATELY_FACTOR);
+        return isApproximatelyEqual(first, second, DEFAULT_APPROXIMATELY_EPSILON);
     }
 
     /**
@@ -36,26 +38,36 @@ public class FloatingPointNumberComparator {
      *
      * @param first               floating point number
      * @param second              floating point number
-     * @param approximatelyFactor factor to determine approximation: for 1% set to 0.01, for 0.1% set to 0.001 and so on...
+     * @param approximatelyEpsilon factor to determine approximation: for 1% set to 0.01, for 0.1% set to 0.001 and so on...
      * @return true if first minus second smaller than approximation
      * @throws IllegalArgumentException when first/second out of range (+/-1E+/-150)
      */
-    public static boolean isApproximatelyEqual(double first, double second, double approximatelyFactor) {
+    public static boolean isApproximatelyEqual(double first, double second, double approximatelyEpsilon) {
         validateInput(first, second);
-        double approximatelyRange = first * approximatelyFactor;
-        LOGGER.fine("first :" + first);
-        LOGGER.fine("second:" + second);
-        LOGGER.fine("range: " + approximatelyRange);
-        LOGGER.fine("diff:  " + (first - second));
-        return Math.pow((first - second), 2) < Math.pow(approximatelyRange, 2); //absolut values using squares
+        double epsilon = first * approximatelyEpsilon;
+        LOGGER.fine("first  :" + first);
+        LOGGER.fine("second :" + second);
+        LOGGER.fine("epsilon:" + approximatelyEpsilon);
+        LOGGER.fine("diff   :" + (first - second));
+        checkEpsilon(epsilon);
+        return Math.abs(first - second) <= epsilon;
+    }
+
+    private static void checkEpsilon(double epsilon) {
+        if(Double.isNaN(epsilon) || epsilon <= 0){
+            throw new IllegalArgumentException(ERROR_MESSAGE_INVALID_EPSILON);
+        }
     }
 
     private static void validateInput(double first, double second) {
+        if (Double.isNaN(first) || Double.isNaN(second)) {
+            throw new IllegalArgumentException(ERROR_MESSAGE_NAN);
+        }
         if ((first > BIG_MAX || first < BIG_MIN) || (second > BIG_MAX || second < BIG_MIN)) {
-            throw new IllegalArgumentException(String.format(ERROR_MESSAGE, "big"));
+            throw new IllegalArgumentException(String.format(ERROR_MESSAGE_OUT_OF_RANGE, "big"));
         }
         if ((first < SMALL_MAX && first > SMALL_MIN) || (second < SMALL_MAX && second > SMALL_MIN)) {
-            throw new IllegalArgumentException(String.format(ERROR_MESSAGE, "small"));
+            throw new IllegalArgumentException(String.format(ERROR_MESSAGE_OUT_OF_RANGE, "small"));
         }
     }
 }
